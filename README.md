@@ -28,7 +28,7 @@ npm install
 # Start server
 npm start
 ```
-Server runs at: `http://localhost:5000`
+Server runs at: `http://localhost:3000`
 
 ### 2. Frontend Setup
 ```bash
