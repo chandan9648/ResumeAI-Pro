@@ -21,7 +21,7 @@ app.use(helmet({
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -78,7 +78,7 @@ app.use((req, res) => {
 
 // ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('❌ Global Error:', err);
+  console.error(' Global Error:', err);
 
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ success: false, message: 'File too large. Maximum size is 5MB.' });
