@@ -51,7 +51,7 @@ App runs at: `http://localhost:5173`
 ### Backend (`backend/.env`)
 | Variable | Description |
 |----------|-------------|
-| `PORT` | Server port (default: 5000) |
+| `PORT` | Server port (default: 3000) |
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret for signing JWT tokens |
 | `OPENAI_API_KEY` | OpenAI API key (GPT-4o) |

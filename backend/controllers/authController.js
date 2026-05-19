@@ -2,8 +2,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
 
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'resumeai-pro-dev-secret' : null);
+
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured. Set it in backend/.env.');
+  }
+
+  return jwt.sign({ id }, JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
@@ -37,6 +43,7 @@ const register = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Register error:', error.stack || error);
     return sendError(res, 500, error.message);
   }
 };
