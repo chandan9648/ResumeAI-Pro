@@ -54,6 +54,7 @@ App runs at: `http://localhost:5173`
 | `PORT` | Server port (default: 3000) |
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret for signing JWT tokens |
+| `ADMIN_SIGNUP_KEY` | Secret required to create admin accounts |
 | `OPENAI_API_KEY` | OpenAI API key (GPT-4o) |
 | `RAZORPAY_KEY_ID` | Razorpay test key ID |
 | `RAZORPAY_KEY_SECRET` | Razorpay test secret |

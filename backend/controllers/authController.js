@@ -18,9 +18,16 @@ const generateToken = (id) => {
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    const role = String(req.body.role || '').toLowerCase();
+    const adminKey = req.body.adminKey || req.body.adminkey;
+    const isAdminSignup = role === 'admin';
 
     if (!name || !email || !password) {
       return sendError(res, 400, 'Name, email, and password are required.');
+    }
+
+    if (isAdminSignup && adminKey !== process.env.ADMIN_SIGNUP_KEY) {
+      return sendError(res, 403, 'Admin signup is not allowed without a valid admin key.');
     }
 
     const existingUser = await User.findOne({ email });
@@ -28,7 +35,12 @@ const register = async (req, res) => {
       return sendError(res, 409, 'An account with this email already exists.');
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: isAdminSignup ? 'admin' : 'user',
+    });
     const token = generateToken(user._id);
 
     return sendSuccess(res, 201, 'Account created successfully.', {
