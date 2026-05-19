@@ -6,19 +6,24 @@ import {
   Layers, CreditCard, Settings, Zap, LogOut, Shield, Copy
 } from 'lucide-react';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/dashboard/upload', label: 'Upload Resume', icon: Upload },
-  { to: '/dashboard/versions', label: 'My Resumes', icon: Copy },
-  { to: '/dashboard/templates', label: 'Templates', icon: Layers },
-  { to: '/dashboard/billing', label: 'Billing', icon: CreditCard },
-  { to: '/dashboard/settings', label: 'Settings', icon: Settings },
-];
-
 export default function Sidebar() {
   const { sidebarOpen } = useUIStore();
   const { user, logout, isAdmin } = useAuthStore();
   const navigate = useNavigate();
+
+  const navItems = isAdmin()
+    ? [
+        { to: '/dashboard', label: 'Admin Dashboard', icon: Shield, end: true },
+        { to: '/dashboard/settings', label: 'Settings', icon: Settings },
+      ]
+    : [
+        { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
+        { to: '/dashboard/upload', label: 'Upload Resume', icon: Upload },
+        { to: '/dashboard/versions', label: 'My Resumes', icon: Copy },
+        { to: '/dashboard/templates', label: 'Templates', icon: Layers },
+        { to: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+        { to: '/dashboard/settings', label: 'Settings', icon: Settings },
+      ];
 
   return (
     <aside style={{
@@ -60,7 +65,7 @@ export default function Sidebar() {
       </div>
 
       {/* Free plan banner */}
-      {sidebarOpen && user?.subscriptionPlan === 'free' && (
+      {sidebarOpen && !isAdmin() && user?.subscriptionPlan === 'free' && (
         <div style={{
           margin: '12px 12px 0',
           padding: '12px',
@@ -104,27 +109,10 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {isAdmin() && (
-          <NavLink
-            to="/admin"
-            style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '11px 12px', borderRadius: '10px', marginTop: '8px',
-              textDecoration: 'none', fontSize: '14px', fontWeight: 500,
-              color: isActive ? 'var(--accent-purple)' : 'var(--text-muted)',
-              background: isActive ? 'rgba(139,92,246,0.1)' : 'transparent',
-              border: '1px solid',
-              borderColor: isActive ? 'rgba(139,92,246,0.3)' : 'transparent',
-            })}
-          >
-            <Shield size={18} style={{ flexShrink: 0 }} />
-            {sidebarOpen && <span>Admin</span>}
-          </NavLink>
-        )}
       </nav>
 
       {/* Upgrade CTA */}
-      {sidebarOpen && user?.subscriptionPlan === 'free' && (
+      {sidebarOpen && !isAdmin() && user?.subscriptionPlan === 'free' && (
         <div style={{ padding: '12px' }}>
           <button
             onClick={() => navigate('/dashboard/billing')}

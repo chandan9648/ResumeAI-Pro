@@ -11,8 +11,8 @@ const getAllUsers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
-      User.find().select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit),
-      User.countDocuments(),
+      User.find({ role: { $ne: 'admin' } }).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit),
+      User.countDocuments({ role: { $ne: 'admin' } }),
     ]);
 
     return sendSuccess(res, 200, 'Users fetched.', {
@@ -34,8 +34,8 @@ const getAnalytics = async (req, res) => {
       totalPayments,
       recentPayments,
     ] = await Promise.all([
-      User.countDocuments(),
-      User.countDocuments({ subscriptionPlan: 'premium' }),
+      User.countDocuments({ role: { $ne: 'admin' } }),
+      User.countDocuments({ role: { $ne: 'admin' }, subscriptionPlan: 'premium' }),
       Resume.countDocuments(),
       Payment.aggregate([
         { $match: { status: 'paid' } },
@@ -54,7 +54,7 @@ const getAnalytics = async (req, res) => {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const monthlySignups = await User.aggregate([
-      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      { $match: { createdAt: { $gte: sixMonthsAgo }, role: { $ne: 'admin' } } },
       {
         $group: {
           _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },

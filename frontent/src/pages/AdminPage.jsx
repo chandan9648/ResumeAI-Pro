@@ -18,7 +18,7 @@ export default function AdminPage() {
           adminService.getUsers(),
         ]);
         setAnalytics(analyticsRes.data.data);
-        setUsers(usersRes.data.data.users);
+        setUsers((usersRes.data.data.users || []).filter((u) => u.role !== 'admin'));
       } catch (err) {
         toast.error('Failed to load admin data');
       } finally {
@@ -47,6 +47,7 @@ export default function AdminPage() {
   };
 
   const stats = analytics?.stats;
+  const visibleUsers = users.filter((u) => u.role !== 'admin');
 
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', padding: '32px 40px' }}>
@@ -126,7 +127,7 @@ export default function AdminPage() {
           {/* Users Table */}
           <div className="glass" style={{ padding: '24px' }}>
             <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Users size={16} color="var(--accent-blue)" /> All Users ({users.length})
+              <Users size={16} color="var(--accent-blue)" /> All Users ({visibleUsers.length})
             </h2>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -138,7 +139,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
+                  {visibleUsers.map((u) => (
                     <tr key={u._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

@@ -4,11 +4,16 @@ import { motion } from 'framer-motion';
 import { Upload, FileText, TrendingUp, Zap, ArrowRight, Plus } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useResumeStore from '../../store/resumeStore';
+import AdminPage from '../AdminPage';
 
 export default function DashboardHome() {
   const { user } = useAuthStore();
   const { resumes, fetchResumes, loading } = useResumeStore();
   const navigate = useNavigate();
+
+  if (user?.role === 'admin') {
+    return <AdminPage />;
+  }
 
   useEffect(() => { fetchResumes(); }, []);
 

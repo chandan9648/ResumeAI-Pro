@@ -96,9 +96,11 @@ export default function DashboardLayout() {
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: '13px', fontWeight: 600 }}>{user?.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {user?.subscriptionPlan === 'premium' ? '⭐ Premium' : 'Free Plan'}
-                  </div>
+                  {user?.role !== 'admin' && (
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      {user?.subscriptionPlan === 'premium' ? '⭐ Premium' : 'Free Plan'}
+                    </div>
+                  )}
                 </div>
               </button>
 

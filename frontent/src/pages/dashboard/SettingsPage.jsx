@@ -55,11 +55,13 @@ export default function SettingsPage() {
             <div>
               <div style={{ fontWeight: 700, fontSize: '18px', marginBottom: '4px' }}>{user?.name}</div>
               <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{user?.email}</div>
-              <div style={{ marginTop: '6px' }}>
-                <span className={`badge ${user?.subscriptionPlan === 'premium' ? 'badge-purple' : 'badge-blue'}`}>
-                  {user?.subscriptionPlan === 'premium' ? '⭐ Premium' : 'Free Plan'}
-                </span>
-              </div>
+              {user?.role !== 'admin' && (
+                <div style={{ marginTop: '6px' }}>
+                  <span className={`badge ${user?.subscriptionPlan === 'premium' ? 'badge-purple' : 'badge-blue'}`}>
+                    {user?.subscriptionPlan === 'premium' ? '⭐ Premium' : 'Free Plan'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -122,23 +124,24 @@ export default function SettingsPage() {
           </form>
         </div>
 
-        {/* Stats */}
-        <div className="glass" style={{ padding: '24px' }}>
-          <h3 style={{ fontWeight: 700, marginBottom: '16px', fontSize: '14px' }}>Account Stats</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            {[
-              { label: 'Member Since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'N/A' },
-              { label: 'Resumes Uploaded', value: user?.uploadCount || 0 },
-              { label: 'Plan', value: user?.subscriptionPlan === 'premium' ? '⭐ Premium' : '🆓 Free' },
-              { label: 'Role', value: user?.role === 'admin' ? '🛡️ Admin' : '👤 User' },
-            ].map((s) => (
-              <div key={s.label}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{s.label}</div>
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>{s.value}</div>
-              </div>
-            ))}
+        {user?.role !== 'admin' && (
+          <div className="glass" style={{ padding: '24px' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: '16px', fontSize: '14px' }}>Account Stats</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {[
+                { label: 'Member Since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'N/A' },
+                { label: 'Resumes Uploaded', value: user?.uploadCount || 0 },
+                { label: 'Plan', value: user?.subscriptionPlan === 'premium' ? '⭐ Premium' : '🆓 Free' },
+                { label: 'Role', value: user?.role === 'admin' ? '🛡️ Admin' : '👤 User' },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{s.label}</div>
+                  <div style={{ fontWeight: 600, fontSize: '15px' }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
     </div>
   );
