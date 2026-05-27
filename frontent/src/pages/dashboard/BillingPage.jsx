@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Crown, Check, CreditCard, Calendar, AlertCircle } from 'lucide-react';
+import { Zap, Crown, Check, CreditCard } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useUIStore from '../../store/uiStore';
 import { paymentService } from '../../services/paymentService';
 import toast from 'react-hot-toast';
+
+// Load Razorpay checkout script dynamically
+const loadRazorpay = () => new Promise((resolve) => {
+  if (window.Razorpay) return resolve(true);
+  const script = document.createElement('script');
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  script.onload = () => resolve(true);
+  script.onerror = () => resolve(false);
+  document.body.appendChild(script);
+});
 
 const plans = [
   {
@@ -40,7 +50,7 @@ const plans = [
 ];
 
 export default function BillingPage() {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, refreshProfile } = useAuthStore();
   const { openSubscriptionModal } = useUIStore();
   const [payments, setPayments] = useState([]);
   const [loadingPlan, setLoadingPlan] = useState(null);
@@ -57,42 +67,60 @@ export default function BillingPage() {
       const { order, keyId } = data.data;
 
       if (order.id.startsWith('order_mock_')) {
+        // Mock / dev mode — auto-verify
         await paymentService.verifyPayment({
           razorpayOrderId: order.id,
           razorpayPaymentId: `pay_mock_${Date.now()}`,
           razorpaySignature: 'mock',
         });
         updateUser({ subscriptionPlan: 'premium' });
+        await refreshProfile(); // sync from server
         toast.success('🎉 Upgraded to Premium!');
         setPayments((p) => [{ _id: Date.now(), plan: planId, amount: order.amount, status: 'paid', createdAt: new Date() }, ...p]);
       } else {
+        // Load Razorpay script first
+        const loaded = await loadRazorpay();
+        if (!loaded) { toast.error('Failed to load payment gateway. Check your connection.'); return; }
+
         const options = {
           key: keyId,
           amount: order.amount,
           currency: 'INR',
           name: 'ResumeAI Pro',
+          description: `${planId === 'yearly' ? 'Yearly' : 'Monthly'} Premium Plan`,
           order_id: order.id,
           handler: async (response) => {
-            await paymentService.verifyPayment({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            });
-            updateUser({ subscriptionPlan: 'premium' });
-            toast.success('🎉 Upgraded to Premium!');
+            try {
+              await paymentService.verifyPayment({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              updateUser({ subscriptionPlan: 'premium' });
+              await refreshProfile();
+              toast.success('🎉 Upgraded to Premium!');
+              setPayments((p) => [{ _id: Date.now(), plan: planId, amount: order.amount, status: 'paid', createdAt: new Date() }, ...p]);
+            } catch { toast.error('Payment verification failed. Contact support.'); }
           },
+          prefill: { email: user?.email || '' },
           theme: { color: '#4f8ef7' },
         };
         new window.Razorpay(options).open();
       }
     } catch (err) {
-      toast.error('Payment failed. Try again.');
+      toast.error(err.response?.data?.message || 'Payment failed. Try again.');
     } finally {
       setLoadingPlan(null);
     }
   };
 
   const isPremium = user?.subscriptionPlan === 'premium';
+
+  // isCurrent: free plan = user is NOT premium; paid plan = user IS premium AND plan matches
+  const isCurrentPlan = (planId) => {
+    if (planId === 'free') return !isPremium;
+    return isPremium; // both monthly/yearly show as "active" when premium (we don't store which sub-type)
+  };
 
   return (
     <div className="page-container">
@@ -128,7 +156,7 @@ export default function BillingPage() {
         {/* Pricing Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '40px' }}>
           {plans.map((plan) => {
-            const isCurrent = plan.id === 'free' ? !isPremium : isPremium;
+            const isCurrent = isCurrentPlan(plan.id);
             return (
               <div key={plan.id} style={{
                 padding: '28px',

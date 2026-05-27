@@ -8,6 +8,7 @@ const {
   updateResume,
   duplicateResume,
   deleteResume,
+  reparseResume,
 } = require('../controllers/resumeController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -18,6 +19,7 @@ router.post('/optimize', protect, optimizeResumeById);
 router.get('/:id', protect, getResumeById);
 router.put('/:id', protect, updateResume);
 router.post('/:id/duplicate', protect, duplicateResume);
+router.post('/:id/reparse', protect, reparseResume);
 router.delete('/:id', protect, deleteResume);
 
 module.exports = router;

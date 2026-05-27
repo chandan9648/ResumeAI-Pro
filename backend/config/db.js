@@ -4,7 +4,7 @@ const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/resumeai-pro';
     const conn = await mongoose.connect(uri);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
     console.error('💡 Make sure MongoDB is running (mongod) or set MONGODB_URI in .env to your Atlas connection string.');

@@ -79,6 +79,20 @@ const useResumeStore = create((set, get) => ({
     }
   },
 
+  reparseResume: async (id) => {
+    try {
+      const res = await resumeService.reparse(id);
+      const { resume } = res.data.data;
+      set((state) => ({
+        currentResume: resume,
+        resumes: state.resumes.map((r) => (r._id === resume._id ? resume : r)),
+      }));
+      return { success: true, resume };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Re-parse failed' };
+    }
+  },
+
   duplicateResume: async (id) => {
     try {
       const res = await resumeService.duplicate(id);

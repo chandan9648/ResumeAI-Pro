@@ -11,11 +11,11 @@ export default function DashboardHome() {
   const { resumes, fetchResumes, loading } = useResumeStore();
   const navigate = useNavigate();
 
+  useEffect(() => { fetchResumes(); }, []);
+
   if (user?.role === 'admin') {
     return <AdminPage />;
   }
-
-  useEffect(() => { fetchResumes(); }, []);
 
   const avgATS = resumes.length
     ? Math.round(resumes.reduce((s, r) => s + (r.atsScore || 0), 0) / resumes.length)

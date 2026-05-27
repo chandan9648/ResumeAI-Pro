@@ -6,6 +6,15 @@ import useAuthStore from '../../store/authStore';
 import { paymentService } from '../../services/paymentService';
 import toast from 'react-hot-toast';
 
+const loadRazorpay = () => new Promise((resolve) => {
+  if (window.Razorpay) return resolve(true);
+  const script = document.createElement('script');
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  script.onload = () => resolve(true);
+  script.onerror = () => resolve(false);
+  document.body.appendChild(script);
+});
+
 const plans = [
   {
     id: 'monthly',
@@ -36,7 +45,7 @@ const features = [
 
 export default function SubscriptionModal() {
   const { closeSubscriptionModal } = useUIStore();
-  const { updateUser } = useAuthStore();
+  const { updateUser, refreshProfile, user } = useAuthStore();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +63,7 @@ export default function SubscriptionModal() {
           razorpaySignature: 'mock_signature',
         });
         updateUser({ subscriptionPlan: 'premium' });
+        await refreshProfile();
         toast.success('🎉 Welcome to Premium! All features unlocked!');
         closeSubscriptionModal();
         setLoading(false);
@@ -61,6 +71,9 @@ export default function SubscriptionModal() {
       }
 
       // Real Razorpay checkout
+      const loaded = await loadRazorpay();
+      if (!loaded) { toast.error('Failed to load payment gateway. Check your connection.'); setLoading(false); return; }
+
       const options = {
         key: keyId,
         amount: order.amount,
@@ -76,12 +89,14 @@ export default function SubscriptionModal() {
               razorpaySignature: response.razorpay_signature,
             });
             updateUser({ subscriptionPlan: 'premium' });
+            await refreshProfile();
             toast.success('🎉 Welcome to Premium!');
             closeSubscriptionModal();
           } catch {
             toast.error('Payment verification failed. Contact support.');
           }
         },
+        prefill: { email: user?.email || '' },
         theme: { color: '#4f8ef7' },
       };
 

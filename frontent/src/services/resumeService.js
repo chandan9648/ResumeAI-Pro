@@ -10,5 +10,6 @@ export const resumeService = {
   getById: (id) => api.get(`/resume/${id}`),
   update: (id, data) => api.put(`/resume/${id}`, data),
   duplicate: (id) => api.post(`/resume/${id}/duplicate`),
+  reparse: (id) => api.post(`/resume/${id}/reparse`),
   delete: (id) => api.delete(`/resume/${id}`),
 };

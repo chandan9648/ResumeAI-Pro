@@ -186,6 +186,32 @@ const duplicateResume = async (req, res) => {
   }
 };
 
+// POST /api/resume/:id/reparse — re-parse originalText with improved heuristic
+const reparseResume = async (req, res) => {
+  try {
+    const resume = await Resume.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!resume) return sendError(res, 404, 'Resume not found.');
+
+    if (!resume.originalText || resume.originalText.trim().length < 20) {
+      return sendError(res, 422, 'No original text stored for this resume. Please re-upload it.');
+    }
+
+    const parsedSections = parseResumeTextHeuristic(resume.originalText);
+    const { total, breakdown } = calculateATSScore(parsedSections, resume.originalText, {});
+
+    resume.parsedSections = parsedSections;
+    resume.atsScore = total;
+    resume.atsBreakdown = breakdown;
+    resume.isOptimized = false;
+    resume.optimizedSections = null;
+    await resume.save();
+
+    return sendSuccess(res, 200, 'Resume re-parsed successfully.', { resume });
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+};
+
 // DELETE /api/resume/:id
 const deleteResume = async (req, res) => {
   try {
@@ -205,4 +231,5 @@ module.exports = {
   updateResume,
   duplicateResume,
   deleteResume,
+  reparseResume,
 };
